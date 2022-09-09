@@ -10,11 +10,38 @@
 </head>
 
 <body>
-  <h2>src is `./video.webm`</h2>
-  <video id="video1" style="width: 40vw; height: 40vh" class="video-js"></video>
-  <h2>src is object URL of `./video.webm`</h2>
-  <video id="video2" style="width: 40vw; height: 40vh" class="video-js"></video>
+  <button id="play" style="font-size: 1.5em">1. play</button>
+  <button id="swap" style="font-size: 1.5em">2. swap to dash source</button>
+  <div style="display: flex">
+    <video id="video-webm" style="width: 40vw; height: 40vh" class="video-js"></video>
+    <video id="video-dash" style="width: 40vw; height: 40vh" class="video-js"></video>
+  </div>
   <script type="module" src="/src/main.ts"></script>
+  <h2>what is going on here?</h2>
+  <p>
+    the source being passed to the player on page load is a webm file from
+    the old extension, meaning it has passed through the `mediaWriter` in the old
+    extension which puts duration and other metadata at the start of the file
+    so that it is seekable (...hope i'm getting that right).
+  </p>
+  <p>
+    the file is statically hosted in this repo, but on page load, the page
+    fetches the file in full, and converts a blob of the file to an objectURL.
+    this matters because it's the technique we'd use if we tried to get "local
+    playback" set up in the webapp. that the video below plays on page load shows
+    that a webm blob in memory is seekable in videojs. so, provided we can get
+    `mediaWriter` going in the new extension, there's no reason we can't get
+    local playback going in the webapp.
+  </p>
+  <p>
+    the "swap" button here simulates what might happen when the upload is done.
+    pressing it during playback loads the dash manifest to a second player,
+    seeks it to the right place, pauses the webm player, and plays the new one.
+    there's a slight, but we could probably engineer this away-- or even just
+    defer swapping out the source until the user pauses if they are playing the
+    video at the time the upload/processing completes.
+  </p>
+  <p> </p>
 </body>
 
 </html>

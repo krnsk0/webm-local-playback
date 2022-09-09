@@ -1,11 +1,11 @@
 import videojs from 'video.js';
 
-const player1 = videojs(document.getElementById('video1')!, {
+const webmPlayer = videojs(document.getElementById('video-webm')!, {
   autoplay: false,
   controls: true,
 });
 
-const player2 = videojs(document.getElementById('video2')!, {
+const dashPlayer = videojs(document.getElementById('video-dash')!, {
   autoplay: false,
   controls: true,
 });
@@ -14,6 +14,29 @@ const player2 = videojs(document.getElementById('video2')!, {
   const response = await fetch('./video.webm');
   const blob = await response.blob();
   const objectURL = URL.createObjectURL(blob);
-  player1.src('./video.webm');
-  player2.src({ type: 'video/webm', src: objectURL });
+  webmPlayer.src({ type: 'video/webm', src: objectURL });
+  document.getElementById('video-dash')!.style.display = 'none';
 })();
+
+document.getElementById('play')?.addEventListener('click', () => {
+  webmPlayer.play();
+});
+
+document.getElementById('swap')?.addEventListener('click', () => {
+  dashPlayer.src({ type: 'application/dash+xml', src: './manifest.mpd' });
+  dashPlayer.one('loadeddata', () => {
+    // pre-seek to make transition faster
+    const currentTime = webmPlayer.currentTime();
+    dashPlayer.currentTime(currentTime);
+
+    // when seek is done, do the swap
+    dashPlayer.one('seeked', () => {
+      const currentTime = webmPlayer.currentTime();
+      dashPlayer.currentTime(currentTime);
+      webmPlayer.pause();
+      dashPlayer.play();
+      document.getElementById('video-dash')!.style.display = 'inherit';
+      document.getElementById('video-webm')!.style.display = 'none';
+    });
+  });
+});
